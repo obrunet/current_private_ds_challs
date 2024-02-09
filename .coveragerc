@@ -1,0 +1,12 @@
+[run]
+plugins = covdefaults
+omit =
+	*/tests/*
+	*/venv/*
+	*/.venv/*
+concurrency = 
+	thread
+	multiprocessing
+	
+[report]
+fail_under = 0

@@ -1,0 +1,6 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+changelog_incremental = true
+tag_format = "v$version"
+update_changelog_on_bump = true
+version = "0.0.0"

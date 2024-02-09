@@ -1,0 +1,173 @@
+A dependency manager like Python Poetry helps you specify, install, and resolve external packages in your projects.
+Imho, there are 2 main advantages of using Poetry over pip:
+- avoiding conflicts: pip doesn't always care of the version of other package depedencies leading to conflict without explicit user notification.
+- reproductibility: with toml or lock, one can reproduce the same exact venv which is important in data science.
+
+Let's start by important concepts first:
+
+
+--------------------------------- 
+
+[Virtual Environments](https://realpython.com/python-virtual-environments-a-primer/#why-do-you-need-virtual-environments)
+
+Each environment can use different versions of package dependencies and Python. 
+
+- Avoid System Pollution: 
+If you install packages to your OS’s global Python (when preinstalled e.g for Linux), these packages will mix with the system-relevant packages. This can lead to unexpected side effects on your OS tasks & behavior. Moreover, during an OS update your frechly installed packages might get overwritten and lost...
+
+- Sidestep Dependency Conflicts
+Each of your projects might require different external libraries/versions. This required that each set of packages is installed in a dedicated place.
+
+- Minimize Reproducibility Issues
+If all your packages live in one location, then it’ll be difficult to only pin dependencies that are relevant for a single project.
+
+- Dodge Installation Privilege Lockouts
+
+
+---------------------------------
+
+
+
+
+[Python Modules](https://realpython.com/python-modules-packages/)
+There are actually different ways to define a module in Python:
+- A module can be written in Python itself - or - in C and loaded dynamically at run-time, like the re (regular expression) module.
+- A built-in module is intrinsically contained in the interpreter, like the itertools module.
+
+A module’s contents are accessed the same way with the `import` statement.
+
+Modules written in Python are exceedingly straightforward to build: all you need to do is create a file that contains code and then give the file a name with a .py extension. That’s it! There are several advantages to modularizing code in a large application: simplicity, maintainability, reusability & scoping (separate namespaces)
+
+
+A module is a single file containing Python code, whereas a `package` is a collection of modules that are organized in a directory hierarchy.
+
+
+---------------------------------
+
+Package manager
+
+The standard package manager for Python is pip. It allows you to install and manage packages that aren’t part of the Python standard library. It also "take care" of your package depedencies. If you think of your depedencies' depedencies... it becomes nearly to deal with all the required package manually.
+
+
+https://dev.to/adamghill/python-package-manager-comparison-1g98
+https://www.linkedin.com/pulse/comparison-various-tools-manage-python-packages-virtual-mukesh-kumar
+
+---------------------------------
+
+Python Poetry Installation
+
+
+$ curl https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 -
+
+add the following line at the end of .bashrc 
+export PATH="~/.local/share/pypoetry/venv/bin/"
+
+Create a New Poetry Project from scratch
+
+$ poetry new --src rp-poetry
+$ cd rp-poetry
+
+
+Use the pyproject.toml the most important file
+It’s a configuration file made according to standard defined in PEP 518. It contains four sections (called tables) with instructions that tools like Poetry recognize and use for dependency management or build routines.
+
+```
+# pyproject.toml
+
+[tool.poetry]
+name = "rp-poetry"
+version = "0.1.0"
+description = ""
+authors = ["Philipp <philipp@realpython.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+```
+
+Poetry doesn’t create a venv right away when you start a project. You can be confirmed by having Poetry list all venv connected to the current project (folder):
+
+$ poetry env list
+
+In order to use same Python version during Poetry installation (`python3` works when you have the Python executable in your PATH):
+
+poetry env use python3
+
+It comes by default with pytest:
+poetry run pytest
+
+
+With the install command, Poetry checks your pyproject.toml file for dependencies then resolves and installs them. But before installing any packages, Poetry figures out which version of a package fulfills the version constraints that other packages set as their requirements.
+
+$ poetry install
+
+Install a Package
+If you don't use version constraints (like requests<=2.1 or requests==2.24) Poetry will always try to install the latest version of the package.
+$ poetry add requests
+
+
+And for packages that you only want to use in your development environment (pytest, Sphinx, Pylint, Flake8, mypy, or coverage.py...)
+$ poetry add black -D # or --dev
+
+Handle poetry.lock
+When you run the poetry add command, Poetry automatically updates pyproject.toml and pins the resolved versions in the poetry.lock file. However, you don’t have to let Poetry do all the work. You can manually add dependencies to the pyproject.toml file and lock them afterward.
+
+
+if you manually add `beautifulsoup4 = "4.10.0"` to the tool.poetry.dependencies table in the pyproject.toml file, it’s not installed yet. As long as there’s no poetry.lock file present in your project, you can run poetry install after manually adding dependencies. Otherwise you've to create or update the lock
+
+$ poetry lock
+
+Because Poetry looks for a poetry.lock file first. If it doesn’t find one, Poetry resolves the dependencies listed in the pyproject.toml file.
+As soon as a poetry.lock file is present, Poetry will rely on this file to install dependencies. Running only poetry install would trigger a warning that both files are out of sync and would produce an error because Poetry wouldn’t know of any beautifulsoup4 versions in the project yet.
+
+Update Dependencies
+
+
+The update command will update all your packages and their dependencies within their version constraints. Afterward, Poetry will update your poetry.lock file.
+$ poetry update
+
+If you want to update one or more specific packages, then you can list them as arguments:
+$ poetry update requests beautifulsoup4
+
+If you want to update a dependency with a version that’s higher than the defined version in the pyproject.toml file, you need to adjust the pyproject.toml file beforehand. Another option is to run the add command with a version constraint or the latest tag:
+
+$ poetry add pytest@latest --dev
+
+After adding a new version, you must run the install command you learned about in the section above. Only then are your updates locked into the poetry.lock file.
+
+If you’re not sure which version-based changes an update would introduce to your dependencies, you can use the --dry-run flag -for both the update and the add commands. It displays the operations in your terminal without executing any of them.
+
+---------------------------- 
+
+Distinction between pyproject.toml & poetry.lock
+While the version requirement in the pyproject.toml file can be loose, Poetry locks the versions you’re actually using in the poetry.lock file. That’s why you should commit this file if you’re using Git, to ensure that all developers will use identical versions of required packages.
+
+Open the Python interpreter:
+$ poetry run python3
+
+To open a shell within the virtual environment:
+$ poetry shell
+To run a script within the virtual environment:
+$ poetry run python your_script.py
+
+[Command reference](https://realpython.com/dependency-management-python-poetry/#command-reference)
+
+
+https://khuyentran1401.github.io/reproducible-data-science/structure_project/introduction.html
+
+
+poetry add pandas
+$ poetry add --group dev jupyter
+precommit
+ruff
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:~/.local/share/pypoetry/venv/bin/"
+export PATH
+
+
